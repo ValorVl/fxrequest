@@ -8,6 +8,7 @@ import ru.sincore.fxrequest.data.Project;
 public enum DataType {
     PROJECTS("projects.json", Project.class),
     ENVS("envs.json", Environment.class),
+    REQUESTS("requests.json", Environment.class),
     ;
 
     private final String fileName;

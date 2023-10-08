@@ -1,34 +1,27 @@
 package ru.sincore.fxrequest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import lombok.extern.java.Log;
 import ru.sincore.fxrequest.data.*;
 import ru.sincore.fxrequest.ui.StageFactory;
 import ru.sincore.fxrequest.ui.controller.CreateProjectController;
-import ru.sincore.fxrequest.ui.pc.PCTreeElement;
+import ru.sincore.fxrequest.ui.rtree.RTreeElement;
 import ru.sincore.fxrequest.utils.DataType;
-import ru.sincore.fxrequest.utils.UIUtils;
 import ru.sincore.fxrequest.utils.View;
 import ru.sincore.fxrequest.utils.ViewInstance;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 @Log
 public class MainController implements Initializable {
@@ -36,6 +29,7 @@ public class MainController implements Initializable {
     private final ObservableList<Environment> environments = FXCollections.observableArrayList();
 
     private final PersistentCollection<Project> projects = new PersistentCollection<>();
+    private final PersistentCollection<RTreeElement> rTree = new PersistentCollection<>();
 
     @FXML
     private BorderPane main;
@@ -44,7 +38,7 @@ public class MainController implements Initializable {
     @FXML
     private ComboBox<Environment> envSelector;
     @FXML
-    private TreeView<PCTreeElement> projectsAndCollectionsTree;
+    private TreeView<RTreeElement> requestCollectionTree;
     @FXML
     private Button executeRequestButton;
     @FXML
@@ -52,8 +46,6 @@ public class MainController implements Initializable {
 
     @FXML
     private SplitPane splitPane;
-
-
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -63,9 +55,12 @@ public class MainController implements Initializable {
             throw new RuntimeException(e);
         }
 
+        //requestCollectionTree.setShowRoot(false);
+        initRTree();
 
         projectSelector.setItems(projects);
 
+        projectSelector.setOnAction(event -> markProjectAsLastActive());
         projects.stream().filter(Project::getIsDefault).findFirst().ifPresent(p -> projectSelector.getSelectionModel().select(p));
 
         projectSelector.setCellFactory(new Callback<>() {
@@ -88,11 +83,9 @@ public class MainController implements Initializable {
 
         envSelector.setItems(environments);
 
-        splitPane.setDividerPosition(0,0.1);
+        splitPane.setDividerPosition(0,0.3);
         httpMethodSelector.getItems().addAll(HttpMethod.getAsList());
         httpMethodSelector.getSelectionModel().select(HttpMethod.GET);
-
-        projectsAndCollectionsTree.setShowRoot(false);
 
     }
 
@@ -119,4 +112,52 @@ public class MainController implements Initializable {
             throw new RuntimeException(e);
         }
     };
+
+    /**
+     * TODO: In the future, it should be moved to the utility class
+     * Mark the selected project as the last active project.
+     * <br>
+     * <br>
+     * This method retrieves the selected project from the project selector and sets it as the default project.
+     * It also sets the isDefault flag of other projects to false.
+     * After updating the projects list, it syncs the changes to the data storage.
+     *
+     * @throws RuntimeException if an IOException occurs while performing the data synchronization
+     */
+    private void markProjectAsLastActive(){
+        var selectedProject = projectSelector.getValue();
+        projects.replaceAll(project -> {
+            if (project.getIsDefault()){
+                project.setIsDefault(false);
+            }
+            if (project.getId().equals(selectedProject.getId())){
+                project.setIsDefault(true);
+            }
+            return project;
+        });
+
+        try {
+            projects.sync(DataType.PROJECTS);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initRTree(){
+        TreeItem<RTreeElement> rootElement = new TreeItem<>();
+        RTreeElement element = new RTreeElement();
+        element.setId(UUID.randomUUID());
+        element.setTitle("root");
+        element.setParent(null);
+        rootElement.setValue(element);
+        requestCollectionTree.setRoot(rootElement);
+    }
+
+    private void fillRTree() throws IOException {
+        rTree.init(DataType.PROJECTS);
+        var root = requestCollectionTree.getRoot();
+        var selectedProject = projectSelector.getValue();
+
+        //root.getChildren().add()
+    }
 }

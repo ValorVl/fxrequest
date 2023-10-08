@@ -24,9 +24,8 @@ open module ru.sincore.fxrequest {
     requires org.apache.httpcomponents.core5.httpcore5.h2;
 
     exports ru.sincore.fxrequest;
-    exports ru.sincore.fxrequest.properties;
     exports ru.sincore.fxrequest.data;
-    exports ru.sincore.fxrequest.ui.pc;
+    exports ru.sincore.fxrequest.ui.rtree;
     exports ru.sincore.fxrequest.utils;
 
 }
