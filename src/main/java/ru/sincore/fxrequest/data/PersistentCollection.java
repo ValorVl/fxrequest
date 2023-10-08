@@ -6,9 +6,6 @@ import ru.sincore.fxrequest.utils.DataType;
 import ru.sincore.fxrequest.utils.PersistenceUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,14 +27,14 @@ public class PersistentCollection<T> extends SimpleListProperty<T> {
     }
 
     private void saveCollection(DataType dataType) throws IOException {
-        final byte[] bjson = getMapper().writeValueAsBytes(this);
+        final var bjson = getMapper().writeValueAsBytes(this);
         if (bjson.length > 0){
             PersistenceUtils.write(bjson, dataType);
         }
     }
 
     private List<T> readList(DataType dataType) throws IOException {
-        final byte[] bjson = read(dataType);
+        final var bjson = read(dataType);
 
         if (bjson != null && bjson.length > 0){
             var javaType = getMapper().getTypeFactory().constructParametricType(List.class, dataType.getDataTypeClass());

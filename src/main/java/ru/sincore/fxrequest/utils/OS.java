@@ -1,7 +1,10 @@
 package ru.sincore.fxrequest.utils;
 
+import lombok.Getter;
+
 import java.util.Locale;
 
+@Getter
 public enum OS {
     OSX("mac"),
     WIN("win"),
@@ -12,10 +15,6 @@ public enum OS {
 
     OS(String name){
         this.osName = name;
-    }
-
-    public String getOsName(){
-        return this.osName;
     }
 
     public OS getOs(){
