@@ -1,0 +1,24 @@
+.toolbar-search-input {
+
+}
+
+.button-green:hover {
+
+}
+
+.custom-toolbar {
+    -fx-spacing: 5;
+    -fx-border-color: rgba(201, 199, 199, 0.24);
+    -fx-border-style: solid inside;
+    -fx-border-width: 0 0 2px 0;
+}
+.spacing-5{
+    -fx-spacing: 5;
+}
+
+.button-bar {
+    -fx-spacing: 5;
+    -fx-border-color: rgba(201, 199, 199, 0.24);
+    -fx-border-style: solid inside;
+    -fx-border-width: 2px 0 0 0;
+}

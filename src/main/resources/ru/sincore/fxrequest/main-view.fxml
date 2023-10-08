@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.skin.TabPaneSkin.TabControlButtons?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.sun.javafx.scene.control.ContextMenuContent.MenuBox?>
+<?import net.synedra.validatorfx.TooltipWrapper?>
+<BorderPane fx:id="main" focusTraversable="true" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2-ea"
+            fx:controller="ru.sincore.fxrequest.MainController" stylesheets="/ru/sincore/fxrequest/main.css">
+
+    <top>
+        <MenuBar BorderPane.alignment="TOP_LEFT">
+            <Menu accelerator="Ctrl+F" text="File">
+                <MenuItem text="Exit" accelerator="Ctrl+Q" onAction="#appExit"/>
+            </Menu>
+            <Menu accelerator="Ctrl+P" text="Properties">
+                <MenuItem text="Exit" accelerator="Ctrl+Q" onAction="#appExit"/>
+            </Menu>
+            <Menu accelerator="Ctrl+H" text="Help">
+                <MenuItem text="Exit" accelerator="Ctrl+Q" onAction="#appExit"/>
+            </Menu>
+        </MenuBar>
+        <ToolBar>
+            <ComboBox fx:id="projectSelector" prefWidth="250"/>
+            <Button onAction="#onProjectCreate" text="Create project">
+                <graphic>
+                    <FontIcon iconLiteral="fltfal-apps-24" iconSize="12"/>
+                </graphic>
+            </Button>
+            <Button>Export</Button>
+        </ToolBar>
+    </top>
+    <center>
+        <BorderPane>
+            <center>
+                <SplitPane fx:id="splitPane" dividerPositions="0.5" focusTraversable="true" prefWidth="300">
+                    <GridPane BorderPane.alignment="TOP_LEFT">
+                        <padding>
+                            <Insets bottom="0.1" left="0.1" right="0.1" top="0.1"/>
+                        </padding>
+                        <ToolBar GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER">
+                            <HBox styleClass="spacing-5">
+                                <GridPane>
+                                    <FontIcon iconLiteral="fltfmz-search-24" iconSize="24" GridPane.hgrow="NEVER"/>
+                                    <TextField  GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS"/>
+                                </GridPane>
+
+                                <MenuButton HBox.hgrow="NEVER">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fltfal-add-24" iconSize="12"/>
+                                    </graphic>
+                                    <items>
+                                        <MenuItem text="Create folder" accelerator="Ctrl+Shift+F">
+                                            <graphic>
+                                                <FontIcon iconLiteral="fltral-folder-add-24" iconSize="12"/>
+                                            </graphic>
+                                        </MenuItem>
+                                        <MenuItem text="Create request" accelerator="Ctrl+Shift+R">
+                                            <graphic>
+                                                <FontIcon iconLiteral="fltfmz-send-24" iconSize="12"/>
+                                            </graphic>
+                                        </MenuItem>
+                                    </items>
+                                </MenuButton>
+                                <Button HBox.hgrow="NEVER">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fltral-arrow-minimize-vertical-24" iconSize="12"/>
+                                    </graphic>
+                                </Button>
+                                <Button HBox.hgrow="NEVER">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fltral-arrow-maximize-vertical-24" iconSize="12"/>
+                                    </graphic>
+                                </Button>
+                            </HBox>
+                        </ToolBar>
+                        <TreeView fx:id="projectsAndCollectionsTree" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
+                    </GridPane>
+                    <VBox>
+                        <HBox styleClass="custom-toolbar" BorderPane.alignment="BASELINE_LEFT">
+                            <padding>
+                                <Insets bottom="5" left="5" right="5" top="5"/>
+                            </padding>
+                            <ComboBox fx:id="httpMethodSelector"/>
+                            <TextField HBox.hgrow="ALWAYS" minWidth="500"/>
+                            <Button fx:id="executeRequestButton"> Execute </Button>
+                            <ComboBox fx:id="envSelector"/>
+                        </HBox>
+                        <SplitPane VBox.vgrow="ALWAYS" orientation="VERTICAL" dividerPositions="0.5" focusTraversable="true">
+                            <TabPane BorderPane.alignment="TOP_LEFT">
+                                <Tab closable="false" text="Query Params">
+
+                                </Tab>
+                                <Tab closable="false" text="Authorization">
+
+                                </Tab>
+                                <Tab closable="false" text="Payload">
+
+                                </Tab>
+                            </TabPane>
+                            <TabPane>
+                                <Tab closable="false" text="Console">
+
+                                </Tab>
+                                <Tab closable="false" text="Headers">
+
+                                </Tab>
+                                <Tab closable="false" text="Cookies">
+
+                                </Tab>
+                            </TabPane>
+                        </SplitPane>
+                    </VBox>
+                </SplitPane>
+            </center>
+        </BorderPane>
+    </center>
+
+    <left>
+
+    </left>
+
+</BorderPane>
