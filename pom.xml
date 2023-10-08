@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>5.9.2</junit.version>
+        <junit.version>5.10.0</junit.version>
         <jackson.version.core>2.15.2</jackson.version.core>
         <jackson.annotations.version>${jackson.version.core}</jackson.annotations.version>
         <jackson.databind.version>${jackson.version.core}</jackson.databind.version>
