@@ -20,9 +20,9 @@ open module ru.sincore.fxrequest {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
 
-    exports ru.sincore.fxrequest;
-    exports ru.sincore.fxrequest.data;
-    exports ru.sincore.fxrequest.ui.rtree;
-    exports ru.sincore.fxrequest.utils;
+    exports org.sincore.fxrequest;
+    exports org.sincore.fxrequest.data;
+    exports org.sincore.fxrequest.ui.rtree;
+    exports org.sincore.fxrequest.utils;
 
 }
