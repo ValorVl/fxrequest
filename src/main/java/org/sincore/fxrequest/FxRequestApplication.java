@@ -15,11 +15,8 @@ public class FxRequestApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(FxRequestApplication.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1024, 768);
         stage.setTitle("FxRequest");
-        //stage.setMaximized(true);
         stage.setScene(scene);
-        stage.setOnShowing(event -> {
-            PersistenceUtils.makeDataFolder();
-        });
+        stage.setOnShowing(event -> PersistenceUtils.makeDataFolder());
         stage.show();
     }
 

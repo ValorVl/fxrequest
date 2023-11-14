@@ -54,7 +54,7 @@ public class CreateProjectController implements Controller<Project> {
             project.setIsDefault(false);
             project.setCreatedAt(LocalDateTime.now());
 
-        if(!validationSupport.isInvalid()){
+        if(Boolean.FALSE.equals(validationSupport.isInvalid())){
             onComplete.accept(project);
             onClose();
         } else {

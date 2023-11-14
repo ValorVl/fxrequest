@@ -14,9 +14,6 @@ import java.io.IOException;
 public class StageFactory<O, T extends Controller<O>> {
     public ViewInstance<T> getViewInstance(View view, Window owner) throws IOException {
         var fxmlResource = getClass().getResource(view.getFxml());
-        if (fxmlResource == null){
-            throw new RuntimeException("Resource [" + view.getFxml() + "] not found");
-        }
         FXMLLoader fxmlLoader = new FXMLLoader(fxmlResource);
         Stage stage = new Stage(StageStyle.DECORATED);
         stage.setScene(new Scene(fxmlLoader.load(), view.getWidth(), view.getHeight()));

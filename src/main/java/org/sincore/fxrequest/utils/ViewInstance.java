@@ -7,4 +7,4 @@ import lombok.Data;
 public class ViewInstance<T>{
     private T controller;
     private Stage stage;
-};
+}

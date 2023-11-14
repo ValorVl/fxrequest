@@ -11,9 +11,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
+import java.util.logging.Level;
 
 @Log
-public class PersistenceUtils {
+public final class PersistenceUtils {
+
+    private PersistenceUtils(){}
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -35,20 +38,28 @@ public class PersistenceUtils {
         var dataDir = getAppDataFolderPath().toAbsolutePath().normalize().toString();
         var pathToDataFile = Paths.get(dataDir, dataType.getFileName()).toFile();
         if (!pathToDataFile.exists()){
-            return null;
+            return new byte[0];
         }
         return Files.readAllBytes(pathToDataFile.toPath());
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void write(byte[] data, DataType dataType) throws IOException {
         var dataDir = PersistenceUtils.getAppDataFolderPath().toAbsolutePath().normalize().toString();
         var pathToDataFile = Paths.get(dataDir, dataType.getFileName()).toFile();
 
         if (!pathToDataFile.exists()){
-            pathToDataFile.setWritable(true, true);
-            pathToDataFile.setReadable(true, true);
-            pathToDataFile.createNewFile();
+            final boolean isWritable = pathToDataFile.setWritable(true, true);
+            if(!isWritable){
+                throw new IOException("File can't be write");
+            }
+            final boolean isReadable = pathToDataFile.setReadable(true, true);
+            if (!isReadable){
+                throw new IOException("File can't be read");
+            }
+            final boolean isCreated = pathToDataFile.createNewFile();
+            if (!isCreated){
+                throw new IOException(String.format("File %s isn't created", pathToDataFile));
+            }
         }
         Files.write(pathToDataFile.toPath(), data, StandardOpenOption.TRUNCATE_EXISTING);
     }
@@ -58,10 +69,13 @@ public class PersistenceUtils {
     }
 
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void makeDataFolder(){
+        var dataDirectory = getAppDataFolderPath().toFile();
         if (!isDataFolderExist()){
-            getAppDataFolderPath().toFile().mkdirs();
+            final boolean isFolderCreated = dataDirectory.mkdirs();
+            if (!isFolderCreated){
+                log.log(Level.INFO, "Data directory {} is not created", dataDirectory);
+            }
         }
     }
 
