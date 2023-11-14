@@ -35,15 +35,8 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
     private long hoverExpandDuration = DEFAULT_HOVER_EXPAND_DURATION;
 
 
-    @SuppressWarnings("WeakerAccess") // part of public API
-    public FancyTreeView(AbstractTreeOperationHandler<FancyTreeNodeFacade<RTreeElement>> opsHandler) {
-        this(opsHandler, true);
-    }
 
-    /**
-     * @param enableDnd False to disable drag-and-drop support.
-     */
-    @SuppressWarnings("unused,WeakerAccess")  // public API
+
     public FancyTreeView(AbstractTreeOperationHandler<FancyTreeNodeFacade<RTreeElement>> opsHandler, boolean enableDnd) {
         this.opsHandler = opsHandler;
         this.enableDnd = enableDnd;
@@ -76,7 +69,7 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
                 contextMenu = null;
             }
             if (e.getButton() == MouseButton.SECONDARY) {
-                ObservableList selections = getSelectionModel().getSelectedItems();
+                var selections = getSelectionModel().getSelectedItems();
                 contextMenu = this.opsHandler.getContextMenu(selections);
                 if (contextMenu != null)
                     contextMenu.show(this, e.getScreenX(), e.getScreenY());
@@ -123,14 +116,12 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
         return expanded;
     }
 
-    @SuppressWarnings({"unused", "WeakerAccess"})  // public API
     public List<TreeItem<FancyTreeNodeFacade<RTreeElement>>> expandAndScrollTo(Object node) {
         var expanded = expandToMakeVisible(node);
         scrollToVisibleItem(node);
         return expanded;
     }
 
-    @SuppressWarnings({"unused", "UnusedReturnValue"})  // public API
     public List<TreeItem<FancyTreeNodeFacade<RTreeElement>>> expandScrollToAndSelect(Object node) {
         var item = findItemForModelNode(node);
         if (item == null)
@@ -158,7 +149,6 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
         return null;
     }
 
-    @SuppressWarnings("WeakerAccess") // part of public API
     public int findIndexOfVisibleItem(TreeItem<FancyTreeNodeFacade<RTreeElement>> targetItem) {
         int index = 0;
         TreeItem<FancyTreeNodeFacade<RTreeElement>> item = getTreeItem(index);
@@ -172,7 +162,6 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
         return -1;
     }
 
-    @SuppressWarnings("WeakerAccess") // part of public API
     public void scrollToAndMakeVisible(Object node) {
         var item = findItemForModelNode(node);
         if (item == null)
@@ -184,7 +173,6 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
             Platform.runLater(() -> scrollTo(index));
     }
 
-    @SuppressWarnings("unused,WeakerAccess")  // public API
     public void scrollToVisibleItem(Object node) {
         var item = findItemForModelNode(node);
         if (item == null)

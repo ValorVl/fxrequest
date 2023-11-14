@@ -1,9 +1,7 @@
 package org.sincore.fxrequest.ui.ctree.request;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.sincore.fxrequest.ui.rtree.RTreeElementType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,6 +24,24 @@ public class RTreeElement implements Serializable {
         this.name = name;
         this.type = type;
         this.id = UUID.randomUUID();
+    }
+
+    public RTreeElement findParentFor(RTreeElement target) {
+        if (children.contains(target))
+            return this;
+        for (RTreeElement child : children) {
+            var parent = child.findParentFor(target);
+            if (parent != null)
+                return parent;
+        }
+        return null;
+    }
+
+    public void addAfter(RTreeElement toAdd, RTreeElement toFollow)
+    {
+        int index = children.indexOf(toFollow) + 1;
+        children.add(index, toAdd);
+        fireChildAdded(toAdd, index);
     }
 
     @Override

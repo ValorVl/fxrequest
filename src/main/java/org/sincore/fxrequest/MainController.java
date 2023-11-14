@@ -4,8 +4,6 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -18,9 +16,11 @@ import org.sincore.fxrequest.data.PersistentCollection;
 import org.sincore.fxrequest.data.Project;
 import org.sincore.fxrequest.ui.StageFactory;
 import org.sincore.fxrequest.ui.controller.CreateProjectController;
-import org.sincore.fxrequest.ui.rtree.RCollectionTree;
-import org.sincore.fxrequest.ui.rtree.RTreeElement;
-import org.sincore.fxrequest.ui.rtree.RTreeElementType;
+import org.sincore.fxrequest.ui.ctree.FancyTreeView;
+import org.sincore.fxrequest.ui.ctree.request.OpsHandler;
+import org.sincore.fxrequest.ui.ctree.request.RTNodeBuilder;
+import org.sincore.fxrequest.ui.ctree.request.RTreeElement;
+import org.sincore.fxrequest.ui.ctree.request.RtreeNodeFacade;
 import org.sincore.fxrequest.utils.DataType;
 import org.sincore.fxrequest.utils.View;
 import org.sincore.fxrequest.utils.ViewInstance;
@@ -37,7 +37,8 @@ public class MainController implements Initializable {
     private final ObservableList<Environment> environments = FXCollections.observableArrayList();
     private final PersistentCollection<Project> projects = new PersistentCollection<>();
 
-
+    @FXML
+    private BorderPane requestCollectionTreeWrapper;
     @FXML
     private BorderPane main;
     @FXML
@@ -45,14 +46,14 @@ public class MainController implements Initializable {
     @FXML
     private ComboBox<Environment> envSelector;
     @FXML
-    private RCollectionTree<RTreeElement> requestCollectionTree;
-    @FXML
     private Button executeRequestButton;
     @FXML
     private ComboBox<HttpMethod> httpMethodSelector;
-
     @FXML
     private SplitPane splitPane;
+
+    private FancyTreeView<RtreeNodeFacade> collectionTreeView;
+    private RTreeElement rootNode = RTNodeBuilder.rootNode();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -63,11 +64,8 @@ public class MainController implements Initializable {
         }
 
         projectSelector.setItems(projects);
-
-
         projectSelector.setOnAction(event -> markProjectAsLastActive());
         projects.stream().filter(Project::getIsDefault).findFirst().ifPresent(p -> projectSelector.getSelectionModel().select(p));
-
         projectSelector.setCellFactory(new Callback<>() {
             @Override
             public ListCell<Project> call(ListView<Project> param) {
@@ -92,6 +90,18 @@ public class MainController implements Initializable {
         httpMethodSelector.getItems().addAll(HttpMethod.getAsList());
         httpMethodSelector.getSelectionModel().select(HttpMethod.GET);
 
+
+
+        collectionTreeView = new FancyTreeView<>(new OpsHandler(rootNode), true);
+        collectionTreeView.setRoot(new RtreeNodeFacade(rootNode));
+        collectionTreeView.expandAll();
+        collectionTreeView.setShowRoot(false);
+        collectionTreeView.setEditable(true);
+        collectionTreeView.getStylesheets().add(getClass().getResource("tree.css").toExternalForm());
+        collectionTreeView.setContextMenu(initTreeViewContextMeny());
+
+        requestCollectionTreeWrapper.autosize();
+        requestCollectionTreeWrapper.setCenter(collectionTreeView);
     }
 
     @FXML
@@ -148,14 +158,20 @@ public class MainController implements Initializable {
 
 
     @FXML
-    private void createFolderAction() {
+    private void createFolderAction(ActionEvent event) {
         var folderCreationDialog = new TextInputDialog();
         folderCreationDialog.setTitle("Creating folder");
         folderCreationDialog.setContentText("Folder name");
-        folderCreationDialog.showAndWait().ifPresent(folderName -> requestCollectionTree.addTreeElement(
-                folderName,
-                RTreeElementType.FOLDER
-        ));
+        folderCreationDialog.showAndWait().ifPresent(folderName -> {
+            var selectionModel = collectionTreeView.getSelectionModel();
+            var selectedItem = selectionModel.getSelectedItem();
+            if(selectedItem == null){
+                selectedItem = collectionTreeView.getRoot();
+            }
+            var modelNode = selectedItem.getValue().getModelNode();
+            var parent = rootNode.findParentFor(modelNode);
+            parent.addAfter(RTNodeBuilder.createFolderNode(folderName), modelNode);
+        });
     }
 
     @FXML
@@ -163,14 +179,23 @@ public class MainController implements Initializable {
         var folderCreationDialog = new TextInputDialog();
         folderCreationDialog.setTitle("Creating request");
         folderCreationDialog.setContentText("Request name");
-        folderCreationDialog.showAndWait().ifPresent(folderName -> requestCollectionTree.addTreeElement(
-                folderName,
-                RTreeElementType.REQUEST
-        ));
+//        folderCreationDialog.showAndWait().ifPresent(folderName -> requestCollectionTree.addTreeElement(
+//                folderName,
+//                RTreeElementType.REQUEST
+//        ));
     }
 
     @FXML
     public void removeElementAction() {
-        requestCollectionTree.removeSelectedElement();
+        //requestCollectionTree.removeSelectedElement();
+    }
+
+    private ContextMenu initTreeViewContextMeny(){
+        var addNewFolder = new MenuItem();
+            addNewFolder.setText("Add new folder");
+            addNewFolder.setOnAction(this::createFolderAction);
+        var menu = new ContextMenu();
+            menu.getItems().add(addNewFolder);
+        return menu;
     }
 }

@@ -1,4 +1,4 @@
-package org.sincore.fxrequest.ui.rtree;
+package org.sincore.fxrequest.ui.ctree.request;
 
 import lombok.Getter;
 

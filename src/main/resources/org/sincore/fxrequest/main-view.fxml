@@ -4,7 +4,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.*?>
-<?import org.sincore.fxrequest.ui.rtree.RCollectionTree?>
 <BorderPane fx:id="main" focusTraversable="true" xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="org.sincore.fxrequest.MainController" stylesheets="/org/sincore/fxrequest/main.css">
@@ -60,30 +59,8 @@
                                 </Button>
                             </HBox>
                         </ToolBar>
-                        <RCollectionTree fx:id="requestCollectionTree" GridPane.columnIndex="0" GridPane.rowIndex="2"
-                                  GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
-                            <contextMenu>
-                                <ContextMenu>
-                                    <items>
-                                        <MenuItem onAction="#createFolderAction" text="Create folder" accelerator="Ctrl+Shift+F">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fltral-folder-add-24" iconSize="12"/>
-                                            </graphic>
-                                        </MenuItem>
-                                        <MenuItem onAction="#createRequestAction" text="Create request" accelerator="Ctrl+Shift+R">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fltfmz-send-24" iconSize="12"/>
-                                            </graphic>
-                                        </MenuItem>
-                                        <MenuItem onAction="#removeElementAction" text="Remove" accelerator="Ctrl+Shift+D">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fltfal-delete-24" iconSize="12"/>
-                                            </graphic>
-                                        </MenuItem>
-                                    </items>
-                                </ContextMenu>
-                            </contextMenu>
-                        </RCollectionTree>
+                        <BorderPane fx:id="requestCollectionTreeWrapper" GridPane.columnIndex="0" GridPane.rowIndex="2"
+                                         GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
                     </GridPane>
                     <VBox>
                         <HBox styleClass="custom-toolbar" BorderPane.alignment="BASELINE_LEFT">

@@ -22,7 +22,8 @@ open module ru.sincore.fxrequest {
 
     exports org.sincore.fxrequest;
     exports org.sincore.fxrequest.data;
-    exports org.sincore.fxrequest.ui.rtree;
+    exports org.sincore.fxrequest.ui.ctree.request;
     exports org.sincore.fxrequest.utils;
+    exports org.sincore.fxrequest.ui.ctree;
 
 }
