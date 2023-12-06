@@ -67,7 +67,7 @@
                             <padding>
                                 <Insets bottom="5" left="5" right="5" top="5"/>
                             </padding>
-                            <ComboBox fx:id="httpMethodSelector"/>
+                            <ComboBox minWidth="120" fx:id="httpMethodSelector"/>
                             <TextField HBox.hgrow="ALWAYS" minWidth="500"/>
                             <Button fx:id="executeRequestButton">Execute</Button>
                             <ComboBox fx:id="envSelector"/>

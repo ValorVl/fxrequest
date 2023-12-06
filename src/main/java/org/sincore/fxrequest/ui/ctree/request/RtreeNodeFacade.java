@@ -1,6 +1,7 @@
 package org.sincore.fxrequest.ui.ctree.request;
 
 import javafx.scene.Node;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.sincore.fxrequest.ui.ctree.FancyTreeCellEditor;
 import org.sincore.fxrequest.ui.ctree.FancyTreeItemFacade;
 import org.sincore.fxrequest.ui.ctree.FancyTreeNodeFacade;
@@ -84,7 +85,10 @@ public class RtreeNodeFacade implements FancyTreeNodeFacade<RTreeElement> {
 
     @Override
     public Node getIcon() {
-        return null;
+        if (dataModel.getIconLateral() == null){
+            return null;
+        }
+        return new FontIcon(dataModel.getIconLateral());
     }
 
     @Override

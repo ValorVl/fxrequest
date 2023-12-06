@@ -115,7 +115,7 @@ public class FancyTreeCell extends TreeCell<FancyTreeNodeFacade<RTreeElement>> {
 
             updateCursorPositionAndHoverTime(e);
 
-            if (!getItem().getChildren().isEmpty() && !(getTreeItem().isExpanded()) && isWaitingForTreeExpand())
+            if (getItem() != null && !getItem().getChildren().isEmpty() && !(getTreeItem().isExpanded()) && isWaitingForTreeExpand())
                 getTreeItem().setExpanded(true);
 
             Point2D sceneCoordinates = localToScene(0d, 0d);

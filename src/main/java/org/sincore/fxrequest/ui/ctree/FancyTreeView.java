@@ -8,23 +8,7 @@ import org.sincore.fxrequest.ui.ctree.request.RTreeElement;
 
 import java.util.*;
 
-/**
- * A tree with lots of fancy features already implemented...so you don't have to. It is intended to help
- * implement a tree on a complex hierarchical data model without forcing the model to comply with the expectations
- * of TreeView. This includes asynchronous state changes and complex user interactions, such as drag-and-drop.
- * <p>
- * Fancy features include:
- * - update view when the model node properties change (not just when the entire model node is replaced). This requires the custom FancyTreeNode extension to notify the FancyTreeItemFacade when these changes happen.
- * - update view from asynchronous events (as above)
- * - smart scroll-to-item behavior
- * - expand tree to make an item visible
- * - cut/copy/paste keystroke support implemented, including common OS key combinations (Windows)
- * - drag and drop support implemented, including tree-aware drop targets (drop before, into, or after)
- * - hover cursor over a tree item to expand it during drag
- *
- * @author Christopher L Merrill (see LICENSE.txt for license details)
- */
-//@SuppressWarnings("ALL")
+
 public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends TreeView<FancyTreeNodeFacade<RTreeElement>> {
 
     static final long DEFAULT_HOVER_EXPAND_DURATION = 2000;
@@ -58,7 +42,7 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
             return cell;
         });
         setSkin(new FancyTreeViewSkin(this));
-        getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
                 this.opsHandler.selectionChanged(getSelectionModel().getSelectedItems()));
 
@@ -77,7 +61,6 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
         });
     }
 
-    @SuppressWarnings("WeakerAccess") // part of public API
     public void expandAll() {
         TreeItem<FancyTreeNodeFacade<RTreeElement>> root = getRoot();
         expandNodeAndChilren(root);
@@ -207,9 +190,29 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
         setRoot(FancyTreeItemBuilder.create(rootFacade));
     }
 
-    @SuppressWarnings("WeakerAccess")  // part of public API
     public void setHoverExpandDuration(long hoverExpandDuration) {
         this.hoverExpandDuration = hoverExpandDuration;
+    }
+
+    public List<RTreeElement> getTreeSnapshot(){
+        var root = this.findItemForModelNode(this.getRoot());
+        if (root != null){
+            return traversAllNodes(root.getChildren());
+        }
+        return Collections.emptyList();
+    }
+
+    private List<RTreeElement>  traversAllNodes(List<TreeItem<FancyTreeNodeFacade<RTreeElement>>> nextChilds){
+        var snapshot = new ArrayList<RTreeElement>();
+        for (var childs : nextChilds){
+            if (childs.getChildren() != null && !childs.getChildren().isEmpty()){
+                var childrens = traversAllNodes(childs.getChildren());
+                if (childs != null){
+                    return childrens;
+                }
+            }
+        }
+        return snapshot;
     }
 
 }

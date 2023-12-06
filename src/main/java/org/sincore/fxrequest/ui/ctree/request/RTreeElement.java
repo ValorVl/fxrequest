@@ -4,14 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
 public class RTreeElement implements Serializable {
+
+    private static final String COPY_LABEL_SUFFIX = " (copy)";
+
     private UUID id;
     private RTreeElementType type;
     private String name;
@@ -20,10 +20,17 @@ public class RTreeElement implements Serializable {
     private List<RTreeElement> children = new ArrayList<>();
     private transient List<ChangeListener> changeListeners = new ArrayList<>();
 
+    public RTreeElement(RTreeElement original){
+        this.name = original.getName();
+        this.type = original.getType();
+        this.iconLateral = original.getIconLateral();
+    }
+
     public RTreeElement(String name, RTreeElementType type){
         this.name = name;
         this.type = type;
         this.id = UUID.randomUUID();
+        this.iconLateral = type.getIconLateral();
     }
 
     public RTreeElement findParentFor(RTreeElement target) {
@@ -42,6 +49,48 @@ public class RTreeElement implements Serializable {
         int index = children.indexOf(toFollow) + 1;
         children.add(index, toAdd);
         fireChildAdded(toAdd, index);
+    }
+
+    public void addChild(RTreeElement child) {
+        children.add(child);
+        fireChildAdded(child, children.size() - 1);
+    }
+
+    void addChild(int index, RTreeElement child) {
+        children.add(index, child);
+        fireChildAdded(child, index);
+    }
+
+    public void removeChild(RTreeElement child) {
+        int index = children.indexOf(child);
+        if (children.remove(child))
+            fireChildRemoved(child, index);
+    }
+
+    boolean isAncestorOf(RTreeElement target) {
+        if (children.contains(target))
+            return true;
+        for (RTreeElement child : children)
+            if (child.isAncestorOf(target))
+                return true;
+        return false;
+    }
+
+    static RTreeElement deepCopy(RTreeElement original, boolean annotateLabel) {
+        var copy = new RTreeElement(original);
+        if (annotateLabel)
+            copy.setName(getCopyName(original));
+        for (RTreeElement child : original.getChildren())
+            copy.addChild(deepCopy(child, annotateLabel));
+        return copy;
+    }
+
+    public static String getCopyName(RTreeElement node){
+        return node.getName() + COPY_LABEL_SUFFIX;
+    }
+
+    public List<RTreeElement> getChildren() {
+        return Collections.unmodifiableList(children);
     }
 
     @Override
@@ -65,7 +114,6 @@ public class RTreeElement implements Serializable {
 
     private void firePropertyChange() {
         if (!changeListeners.isEmpty()){
-            //noinspection Convert2streamapi   (causes a ConcurrentModificationException)
             for (ChangeListener listener : changeListeners)
                 listener.propertyChanged();
         }

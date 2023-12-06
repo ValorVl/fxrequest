@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
 import lombok.extern.java.Log;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.sincore.fxrequest.data.Environment;
 import org.sincore.fxrequest.data.HttpMethod;
 import org.sincore.fxrequest.data.PersistentCollection;
@@ -17,10 +18,7 @@ import org.sincore.fxrequest.data.Project;
 import org.sincore.fxrequest.ui.StageFactory;
 import org.sincore.fxrequest.ui.controller.CreateProjectController;
 import org.sincore.fxrequest.ui.ctree.FancyTreeView;
-import org.sincore.fxrequest.ui.ctree.request.OpsHandler;
-import org.sincore.fxrequest.ui.ctree.request.RTNodeBuilder;
-import org.sincore.fxrequest.ui.ctree.request.RTreeElement;
-import org.sincore.fxrequest.ui.ctree.request.RtreeNodeFacade;
+import org.sincore.fxrequest.ui.ctree.request.*;
 import org.sincore.fxrequest.utils.DataType;
 import org.sincore.fxrequest.utils.View;
 import org.sincore.fxrequest.utils.ViewInstance;
@@ -53,7 +51,7 @@ public class MainController implements Initializable {
     private SplitPane splitPane;
 
     private FancyTreeView<RtreeNodeFacade> collectionTreeView;
-    private RTreeElement rootNode = RTNodeBuilder.rootNode();
+    private final RTreeElement rootNode = RTNodeBuilder.rootNode(new int[1]);
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -97,6 +95,7 @@ public class MainController implements Initializable {
         collectionTreeView.expandAll();
         collectionTreeView.setShowRoot(false);
         collectionTreeView.setEditable(true);
+        collectionTreeView.getSelectionModel().select(collectionTreeView.getRoot());
         collectionTreeView.getStylesheets().add(getClass().getResource("tree.css").toExternalForm());
         collectionTreeView.setContextMenu(initTreeViewContextMeny());
 
@@ -140,7 +139,7 @@ public class MainController implements Initializable {
     private void markProjectAsLastActive(){
         var selectedProject = projectSelector.getValue();
         projects.replaceAll(project -> {
-            if (project.getIsDefault()){
+            if (Boolean.TRUE.equals(project.getIsDefault())){
                 project.setIsDefault(false);
             }
             if (project.getId().equals(selectedProject.getId())){
@@ -167,22 +166,36 @@ public class MainController implements Initializable {
             var selectedItem = selectionModel.getSelectedItem();
             if(selectedItem == null){
                 selectedItem = collectionTreeView.getRoot();
+                var modelNodeRoot = selectedItem.getValue().getModelNode();
+                modelNodeRoot.addAfter(RTNodeBuilder.createFolderNode(folderName), modelNodeRoot);
+            } else if (selectedItem.getValue().getModelNode().getType() != RTreeElementType.REQUEST) {
+                var modelNode = selectedItem.getValue().getModelNode();
+                modelNode.addAfter(RTNodeBuilder.createFolderNode(folderName), modelNode);
             }
-            var modelNode = selectedItem.getValue().getModelNode();
-            var parent = rootNode.findParentFor(modelNode);
-            parent.addAfter(RTNodeBuilder.createFolderNode(folderName), modelNode);
+            //drop selection
+            collectionTreeView.getSelectionModel().select(collectionTreeView.getRoot());
         });
     }
 
     @FXML
-    private void createRequestAction() {
+    private void createRequestAction(ActionEvent event) {
         var folderCreationDialog = new TextInputDialog();
         folderCreationDialog.setTitle("Creating request");
         folderCreationDialog.setContentText("Request name");
-//        folderCreationDialog.showAndWait().ifPresent(folderName -> requestCollectionTree.addTreeElement(
-//                folderName,
-//                RTreeElementType.REQUEST
-//        ));
+        folderCreationDialog.showAndWait().ifPresent(folderName -> {
+            var selectionModel = collectionTreeView.getSelectionModel();
+            var selectedItem = selectionModel.getSelectedItem();
+            if(selectedItem == null){
+                selectedItem = collectionTreeView.getRoot();
+                var modelNodeRoot = selectedItem.getValue().getModelNode();
+                modelNodeRoot.addAfter(RTNodeBuilder.createRequestNode(folderName), modelNodeRoot);
+            } else if (selectedItem.getValue().getModelNode().getType() != RTreeElementType.REQUEST) {
+                var modelNode = selectedItem.getValue().getModelNode();
+                modelNode.addAfter(RTNodeBuilder.createRequestNode(folderName), modelNode);
+            }
+            //drop selection
+            collectionTreeView.getSelectionModel().select(collectionTreeView.getRoot());
+        });
     }
 
     @FXML
@@ -193,9 +206,14 @@ public class MainController implements Initializable {
     private ContextMenu initTreeViewContextMeny(){
         var addNewFolder = new MenuItem();
             addNewFolder.setText("Add new folder");
+            addNewFolder.setGraphic(new FontIcon(RTreeElementType.FOLDER.getIconLateral()));
             addNewFolder.setOnAction(this::createFolderAction);
+        var addRequest = new MenuItem();
+            addRequest.setText("Add new request");
+            addRequest.setGraphic(new FontIcon(RTreeElementType.REQUEST.getIconLateral()));
+            addRequest.setOnAction(this::createRequestAction);
         var menu = new ContextMenu();
-            menu.getItems().add(addNewFolder);
+            menu.getItems().addAll(addNewFolder, addRequest);
         return menu;
     }
 }
