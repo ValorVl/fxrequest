@@ -29,7 +29,7 @@ public class PersistentCollection<T> extends SimpleListProperty<T> {
     private void saveCollection(DataType dataType) throws IOException {
         final var bjson = getMapper().writeValueAsBytes(this);
         if (bjson.length > 0){
-            PersistenceUtils.write(bjson, dataType);
+            PersistenceUtils.write(bjson, dataType, null);
         }
     }
 

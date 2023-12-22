@@ -1,24 +1,42 @@
 package org.sincore.fxrequest.ui.ctree;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.*;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.controlsfx.dialog.ExceptionDialog;
 import org.sincore.fxrequest.ui.ctree.request.RTreeElement;
+import org.sincore.fxrequest.utils.AppExceptionDialog;
+import org.sincore.fxrequest.utils.DataType;
+import org.sincore.fxrequest.utils.PersistenceUtils;
+import org.sincore.fxrequest.utils.StringUtils;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 
+@Slf4j
 public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends TreeView<FancyTreeNodeFacade<RTreeElement>> {
 
     static final long DEFAULT_HOVER_EXPAND_DURATION = 2000;
+    public static final String COLLECTIONS = "collections";
 
     private final AbstractTreeOperationHandler<FancyTreeNodeFacade<RTreeElement>> opsHandler;
     private final boolean enableDnd;
     private ContextMenu contextMenu = null;
+    @Setter
     private long hoverExpandDuration = DEFAULT_HOVER_EXPAND_DURATION;
 
-
+    @Getter @Setter
+    private UUID projectId;
 
 
     public FancyTreeView(AbstractTreeOperationHandler<FancyTreeNodeFacade<RTreeElement>> opsHandler, boolean enableDnd) {
@@ -35,7 +53,7 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
                 if (e.getClickCount() == 2 && e.getButton().equals(MouseButton.PRIMARY)) {
                     e.consume();
                     this.opsHandler.handleDoubleClick(cell, e.isControlDown(), e.isShiftDown(), e.isAltDown());
-//                    Platform.runLater(() -> _ops_handler.handleDoubleClick(cell, e.isControlDown(), e.isShiftDown(), e.isAltDown()));
+                    Platform.runLater(() -> opsHandler.handleDoubleClick(cell, e.isControlDown(), e.isShiftDown(), e.isAltDown()));
                 }
             });
 
@@ -166,7 +184,7 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
             Platform.runLater(() -> scrollTo(index));
     }
 
-    @SuppressWarnings("WeakerAccess") // part of public API
+    @SuppressWarnings("WeakerAccess")
     public List<List<Integer>> getSelectionPaths() {
         ObservableList<TreeItem<FancyTreeNodeFacade<RTreeElement>>> selectedItems = getSelectionModel().getSelectedItems();
         List<List<Integer>> paths = new ArrayList<>();
@@ -181,7 +199,7 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
     private void createPathToItem(List<Integer> path, TreeItem<FancyTreeNodeFacade<RTreeElement>> item) {
         while (item.getParent() != null) {
             var parent = item.getParent();
-            path.add(0, parent.getChildren().indexOf(item));
+            path.add(parent.getChildren().indexOf(item));
             item = parent;
         }
     }
@@ -190,29 +208,23 @@ public class FancyTreeView<T extends FancyTreeNodeFacade<RTreeElement>> extends 
         setRoot(FancyTreeItemBuilder.create(rootFacade));
     }
 
-    public void setHoverExpandDuration(long hoverExpandDuration) {
-        this.hoverExpandDuration = hoverExpandDuration;
-    }
-
-    public List<RTreeElement> getTreeSnapshot(){
-        var root = this.findItemForModelNode(this.getRoot());
-        if (root != null){
-            return traversAllNodes(root.getChildren());
+    public void persist(UUID projectId){
+        var root = getRoot().getValue().getModelNode();
+        var collection = new ArrayList<RTreeElement>();
+        if (root.getChildren() != null){
+            root.visitTree(root, collection::add);
         }
-        return Collections.emptyList();
-    }
 
-    private List<RTreeElement>  traversAllNodes(List<TreeItem<FancyTreeNodeFacade<RTreeElement>>> nextChilds){
-        var snapshot = new ArrayList<RTreeElement>();
-        for (var childs : nextChilds){
-            if (childs.getChildren() != null && !childs.getChildren().isEmpty()){
-                var childrens = traversAllNodes(childs.getChildren());
-                if (childs != null){
-                    return childrens;
-                }
+        var mapper = PersistenceUtils.getMapper();
+
+        try {
+            var snapshot = mapper.writeValueAsBytes(collection);
+            if (snapshot != null && snapshot.length > 0){
+                PersistenceUtils.write(snapshot, DataType.REQUESTS, Path.of(COLLECTIONS, projectId.toString()));
             }
+        } catch (IOException e) {
+            new AppExceptionDialog(e, null).show();
         }
-        return snapshot;
     }
 
 }

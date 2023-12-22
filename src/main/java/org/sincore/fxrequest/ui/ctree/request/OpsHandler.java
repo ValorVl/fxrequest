@@ -9,6 +9,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import lombok.Getter;
 import org.sincore.fxrequest.ui.ctree.FancyTreeNodeFacade;
 import org.sincore.fxrequest.ui.ctree.AbstractTreeOperationHandler;
 
@@ -24,14 +25,11 @@ public class OpsHandler extends AbstractTreeOperationHandler<FancyTreeNodeFacade
     private ObservableList<TreeItem<FancyTreeNodeFacade<RTreeElement>>> draggedItems;
     private List<RTreeElement> droppedNodes;
     private Object droppedContent;
+    @Getter
     private String doubleClickedNodeName;
 
     public OpsHandler(RTreeElement root){
         this.root = root;
-    }
-
-    public String getDoubleClickedNodeName(){
-        return this.doubleClickedNodeName;
     }
 
     @Override

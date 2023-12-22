@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 public class RTNodeBuilder {
 
+    private RTNodeBuilder(){}
+
     private static final String ROOT_NODE_NAME = "root";
 
     public static RTreeElement rootNode(int[] numOfDescendants){

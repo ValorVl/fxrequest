@@ -20,6 +20,10 @@ open module ru.sincore.fxrequest {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
 
+    requires ch.qos.logback.classic;
+    requires ch.qos.logback.core;
+    requires org.slf4j;
+
     exports org.sincore.fxrequest;
     exports org.sincore.fxrequest.data;
     exports org.sincore.fxrequest.ui.ctree.request;

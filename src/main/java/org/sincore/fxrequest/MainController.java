@@ -8,17 +8,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.util.Callback;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+import org.controlsfx.control.StatusBar;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.sincore.fxrequest.data.Environment;
-import org.sincore.fxrequest.data.HttpMethod;
-import org.sincore.fxrequest.data.PersistentCollection;
-import org.sincore.fxrequest.data.Project;
+import org.sincore.fxrequest.data.*;
+import org.sincore.fxrequest.ui.RequestParamsTableView;
+import org.sincore.fxrequest.ui.SelectorCellFactories;
 import org.sincore.fxrequest.ui.StageFactory;
 import org.sincore.fxrequest.ui.controller.CreateProjectController;
 import org.sincore.fxrequest.ui.ctree.FancyTreeView;
 import org.sincore.fxrequest.ui.ctree.request.*;
+import org.sincore.fxrequest.utils.AppExceptionDialog;
 import org.sincore.fxrequest.utils.DataType;
 import org.sincore.fxrequest.utils.View;
 import org.sincore.fxrequest.utils.ViewInstance;
@@ -27,14 +27,19 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
-@Log
+@Slf4j
 public class MainController implements Initializable {
+
+    ObservableList<RequestParam> requestParamsData = FXCollections.observableArrayList();
 
     private final ObservableList<Environment> environments = FXCollections.observableArrayList();
     private final PersistentCollection<Project> projects = new PersistentCollection<>();
 
+    @FXML
+    private RequestParamsTableView requestParamTable;
+    @FXML
+    private StatusBar appStatusBar;
     @FXML
     private BorderPane requestCollectionTreeWrapper;
     @FXML
@@ -55,39 +60,25 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        log.info("application started");
         try {
             projects.init(DataType.PROJECTS);
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't");
+            log.info(">>>", e);
         }
+
+        Platform.runLater(() -> appStatusBar.setText("App started"));
 
         projectSelector.setItems(projects);
         projectSelector.setOnAction(event -> markProjectAsLastActive());
         projects.stream().filter(Project::getIsDefault).findFirst().ifPresent(p -> projectSelector.getSelectionModel().select(p));
-        projectSelector.setCellFactory(new Callback<>() {
-            @Override
-            public ListCell<Project> call(ListView<Project> param) {
-                return new ListCell<>() {
-                    @Override
-                    protected void updateItem(Project item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item != null && !empty) {
-                            setText(item.getTitle());
-                        } else {
-                            setText(null);
-                        }
-                    }
-
-                };
-            }
-        });
+        projectSelector.setCellFactory(SelectorCellFactories.projectProjectCallback);
 
         envSelector.setItems(environments);
 
         splitPane.setDividerPosition(0,0.3);
         httpMethodSelector.getItems().addAll(HttpMethod.getAsList());
         httpMethodSelector.getSelectionModel().select(HttpMethod.GET);
-
 
 
         collectionTreeView = new FancyTreeView<>(new OpsHandler(rootNode), true);
@@ -97,11 +88,17 @@ public class MainController implements Initializable {
         collectionTreeView.setEditable(true);
         collectionTreeView.getSelectionModel().select(collectionTreeView.getRoot());
         collectionTreeView.getStylesheets().add(getClass().getResource("tree.css").toExternalForm());
-        collectionTreeView.setContextMenu(initTreeViewContextMeny());
+        collectionTreeView.setContextMenu(initTreeViewContextMenu());
 
         requestCollectionTreeWrapper.autosize();
         requestCollectionTreeWrapper.setCenter(collectionTreeView);
+
+        requestParamTable.setItems(requestParamsData);
+
+        requestParamTable.setEditable(true);
     }
+
+
 
     @FXML
     private void appExit() {
@@ -121,7 +118,7 @@ public class MainController implements Initializable {
         try {
             projects.sync(DataType.PROJECTS);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            new AppExceptionDialog(e, null).show();
         }
     };
 
@@ -153,6 +150,8 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        collectionTreeView.setProjectId(projectSelector.getValue().getId());
     }
 
 
@@ -174,6 +173,7 @@ public class MainController implements Initializable {
             }
             //drop selection
             collectionTreeView.getSelectionModel().select(collectionTreeView.getRoot());
+            //collectionTreeView.persist(projectSelector.getValue().getId());
         });
     }
 
@@ -195,15 +195,16 @@ public class MainController implements Initializable {
             }
             //drop selection
             collectionTreeView.getSelectionModel().select(collectionTreeView.getRoot());
+            //collectionTreeView.persist(projectSelector.getValue().getId());
         });
     }
 
-    @FXML
-    public void removeElementAction() {
-        //requestCollectionTree.removeSelectedElement();
+    private void deleteElementAction(ActionEvent event){
+        collectionTreeView.getSelectionModel().getSelectedItem().getValue().destroy();
     }
 
-    private ContextMenu initTreeViewContextMeny(){
+    private ContextMenu initTreeViewContextMenu(){
+        var separator = new SeparatorMenuItem();
         var addNewFolder = new MenuItem();
             addNewFolder.setText("Add new folder");
             addNewFolder.setGraphic(new FontIcon(RTreeElementType.FOLDER.getIconLateral()));
@@ -212,8 +213,18 @@ public class MainController implements Initializable {
             addRequest.setText("Add new request");
             addRequest.setGraphic(new FontIcon(RTreeElementType.REQUEST.getIconLateral()));
             addRequest.setOnAction(this::createRequestAction);
+        var devTakeTreeSnapshot = new MenuItem("Take snapshot");
         var menu = new ContextMenu();
-            menu.getItems().addAll(addNewFolder, addRequest);
+            menu.getItems().addAll(addNewFolder, addRequest, separator, devTakeTreeSnapshot);
         return menu;
+    }
+
+    @FXML
+    private void deleteSelection(ActionEvent event) {
+        var selectedIndex = collectionTreeView.getSelectionModel().getSelectedIndex();
+        if (collectionTreeView.getSelectionModel().isSelected(selectedIndex)){
+            var selectedItem = collectionTreeView.getSelectionModel().getSelectedItem();
+
+        }
     }
 }

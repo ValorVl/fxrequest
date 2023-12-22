@@ -2,8 +2,9 @@ package org.sincore.fxrequest.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,9 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
-import java.util.logging.Level;
 
-@Log
+@Slf4j
 public final class PersistenceUtils {
 
     private PersistenceUtils(){}
@@ -26,6 +26,7 @@ public final class PersistenceUtils {
         objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT);
         objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
         objectMapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
     private static final String APP_DATA = ".fxrequest";
@@ -43,25 +44,25 @@ public final class PersistenceUtils {
         return Files.readAllBytes(pathToDataFile.toPath());
     }
 
-    public static void write(byte[] data, DataType dataType) throws IOException {
+    public static void write(byte[] data, DataType dataType, Path subFolders) throws IOException {
         var dataDir = PersistenceUtils.getAppDataFolderPath().toAbsolutePath().normalize().toString();
-        var pathToDataFile = Paths.get(dataDir, dataType.getFileName()).toFile();
+        Path pathToDataFile;
 
-        if (!pathToDataFile.exists()){
-            final boolean isWritable = pathToDataFile.setWritable(true, true);
-            if(!isWritable){
-                throw new IOException("File can't be write");
+        if (subFolders == null){
+            pathToDataFile = Paths.get(dataDir, dataType.getFileName());
+        } else {
+            var pathWithSubFolder = Paths.get(dataDir, subFolders.toString());
+            var isExist = pathWithSubFolder.toFile().exists();
+            if(!isExist){
+                var isCreated = pathWithSubFolder.toFile().mkdirs();
+                if(isCreated){
+                    log.debug("Folder created {}", pathWithSubFolder.toAbsolutePath());
+                }
             }
-            final boolean isReadable = pathToDataFile.setReadable(true, true);
-            if (!isReadable){
-                throw new IOException("File can't be read");
-            }
-            final boolean isCreated = pathToDataFile.createNewFile();
-            if (!isCreated){
-                throw new IOException(String.format("File %s isn't created", pathToDataFile));
-            }
+            pathToDataFile = Paths.get(pathWithSubFolder.toString(), dataType.getFileName());
         }
-        Files.write(pathToDataFile.toPath(), data, StandardOpenOption.TRUNCATE_EXISTING);
+
+        Files.write(pathToDataFile, data, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
     }
 
     private static Path getAppDataFolderPath(){
@@ -74,7 +75,7 @@ public final class PersistenceUtils {
         if (!isDataFolderExist()){
             final boolean isFolderCreated = dataDirectory.mkdirs();
             if (!isFolderCreated){
-                log.log(Level.INFO, "Data directory {} is not created", dataDirectory);
+                log.error("Data directory {} is not created", dataDirectory);
             }
         }
     }

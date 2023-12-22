@@ -1,10 +1,16 @@
 package org.sincore.fxrequest.ui.ctree.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import javafx.scene.control.TreeItem;
 import lombok.Getter;
 import lombok.Setter;
+import org.sincore.fxrequest.ui.ctree.FancyTreeNodeFacade;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Getter
 @Setter
@@ -18,6 +24,8 @@ public class RTreeElement implements Serializable {
     private String iconLateral;
     private List<String> styles = new ArrayList<>();
     private List<RTreeElement> children = new ArrayList<>();
+
+    @JsonIgnore
     private transient List<ChangeListener> changeListeners = new ArrayList<>();
 
     public RTreeElement(RTreeElement original){
@@ -148,6 +156,15 @@ public class RTreeElement implements Serializable {
         if (!changeListeners.isEmpty()) {
             changeListeners.remove(oldListener);
             changeListeners.add(newListener);
+        }
+    }
+
+    public void visitTree(RTreeElement item, Consumer<RTreeElement> onEnter){
+
+        onEnter.accept(item);
+
+        for(var nowItem : item.getChildren()){
+            visitTree(nowItem, onEnter);
         }
     }
 

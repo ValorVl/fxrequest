@@ -4,6 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.*?>
+<?import org.controlsfx.control.StatusBar?>
+<?import org.sincore.fxrequest.ui.RequestParamsTableView?>
 <BorderPane fx:id="main" focusTraversable="true" xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="org.sincore.fxrequest.MainController" stylesheets="/org/sincore/fxrequest/main.css">
@@ -57,6 +59,7 @@
                                         <FontIcon iconLiteral="fltral-arrow-maximize-vertical-24" iconSize="12"/>
                                     </graphic>
                                 </Button>
+                                <Button text="-" onAction="#deleteSelection"/>
                             </HBox>
                         </ToolBar>
                         <BorderPane fx:id="requestCollectionTreeWrapper" GridPane.columnIndex="0" GridPane.rowIndex="2"
@@ -76,7 +79,7 @@
                                    focusTraversable="true">
                             <TabPane BorderPane.alignment="TOP_LEFT">
                                 <Tab closable="false" text="Query Params">
-
+                                    <RequestParamsTableView fx:id="requestParamTable"/>
                                 </Tab>
                                 <Tab closable="false" text="Authorization">
 
@@ -106,5 +109,16 @@
     <left>
 
     </left>
+
+    <bottom>
+        <StatusBar fx:id="appStatusBar">
+            <leftItems>
+
+            </leftItems>
+            <rightItems>
+
+            </rightItems>
+        </StatusBar>
+    </bottom>
 
 </BorderPane>
