@@ -35,7 +35,6 @@ public class OpsHandler extends AbstractTreeOperationHandler<FancyTreeNodeFacade
     @Override
     public void selectionChanged(ObservableList<TreeItem<FancyTreeNodeFacade<RTreeElement>>> selectedItems) {
         super.selectionChanged(selectedItems);
-        System.out.println(">>> changed " + selectedItems.size());
     }
 
     @Override

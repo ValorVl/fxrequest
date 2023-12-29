@@ -58,6 +58,8 @@ public class MainController implements Initializable {
     private FancyTreeView<RtreeNodeFacade> collectionTreeView;
     private final RTreeElement rootNode = RTNodeBuilder.rootNode(new int[1]);
 
+    private OpsHandler opsHandler = null;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         log.info("application started");
@@ -80,8 +82,9 @@ public class MainController implements Initializable {
         httpMethodSelector.getItems().addAll(HttpMethod.getAsList());
         httpMethodSelector.getSelectionModel().select(HttpMethod.GET);
 
+        this.opsHandler = new OpsHandler(rootNode);
 
-        collectionTreeView = new FancyTreeView<>(new OpsHandler(rootNode), true);
+        collectionTreeView = new FancyTreeView<>(opsHandler, true);
         collectionTreeView.setRoot(new RtreeNodeFacade(rootNode));
         collectionTreeView.expandAll();
         collectionTreeView.setShowRoot(false);
@@ -221,10 +224,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void deleteSelection(ActionEvent event) {
-        var selectedIndex = collectionTreeView.getSelectionModel().getSelectedIndex();
-        if (collectionTreeView.getSelectionModel().isSelected(selectedIndex)){
-            var selectedItem = collectionTreeView.getSelectionModel().getSelectedItem();
-
-        }
+        var selectedIndex = collectionTreeView.getSelectionModel().getSelectedItems();
+        opsHandler.handleDelete(selectedIndex);
     }
 }
